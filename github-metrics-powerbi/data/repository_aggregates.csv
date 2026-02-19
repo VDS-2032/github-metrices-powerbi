@@ -1,0 +1,5 @@
+repository,total_prs,merged_prs,rejected_prs,open_prs,avg_time_to_merge_hours,prs_beyond_threshold,unique_contributors,merge_rate,rejection_rate,extraction_date
+cc-order-creation,5,3,1,1,19.0,1,4,60.0,20.0,2026-02-18 12:00:00
+order-modification-persist,5,3,1,1,25.67,1,4,60.0,20.0,2026-02-18 12:00:00
+shopping-list-creation,5,3,0,2,19.67,1,4,60.0,0.0,2026-02-18 12:00:00
+

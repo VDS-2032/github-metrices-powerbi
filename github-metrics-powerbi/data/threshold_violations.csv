@@ -1,0 +1,5 @@
+repository,pr_number,pr_title,pr_url,author,hours_open,hours_overdue,is_beyond_threshold,extraction_date
+cc-order-creation,104,Refactor service layer,https://github.com/ikea/cc-order-creation/pull/104,developer1,200.0,152.0,True,2026-02-18 12:00:00
+order-modification-persist,203,Add payment plan part mapper tests,https://github.com/ikea/order-modification-persist/pull/203,developer2,76.0,28.0,True,2026-02-18 12:00:00
+shopping-list-creation,305,Performance optimization,https://github.com/ikea/shopping-list-creation/pull/305,developer3,99.0,51.0,True,2026-02-18 12:00:00
+

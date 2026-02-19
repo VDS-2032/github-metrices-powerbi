@@ -1,0 +1,178 @@
+{
+    "name": "GitHubMetricsDashboard",
+    "description": "Power BI Dashboard for GitHub Repository Metrics",
+    "version": "1.0.0",
+    "author": "IKEA Development Team",
+    "createdDate": "2026-02-18",
+    "dataModel": {
+        "tables": [
+            {
+                "name": "pull_requests",
+                "description": "Detailed pull request data",
+                "source": "data/pull_requests.csv",
+                "columns": [
+                    {"name": "repository", "type": "Text", "description": "Repository name"},
+                    {"name": "pr_number", "type": "Whole Number", "description": "PR number"},
+                    {"name": "pr_title", "type": "Text", "description": "PR title"},
+                    {"name": "pr_url", "type": "Text", "description": "PR URL"},
+                    {"name": "author", "type": "Text", "description": "PR author username"},
+                    {"name": "state", "type": "Text", "description": "PR state (open/closed)"},
+                    {"name": "is_merged", "type": "True/False", "description": "Whether PR was merged"},
+                    {"name": "is_rejected", "type": "True/False", "description": "Whether PR was rejected"},
+                    {"name": "is_open", "type": "True/False", "description": "Whether PR is still open"},
+                    {"name": "created_at", "type": "DateTime", "description": "PR creation timestamp"},
+                    {"name": "merged_at", "type": "DateTime", "description": "PR merge timestamp"},
+                    {"name": "closed_at", "type": "DateTime", "description": "PR close timestamp"},
+                    {"name": "time_to_merge_hours", "type": "Decimal Number", "description": "Time from open to merge in hours"},
+                    {"name": "hours_open", "type": "Decimal Number", "description": "Total hours PR has been open"},
+                    {"name": "is_beyond_threshold", "type": "True/False", "description": "PR open > 48 hours"},
+                    {"name": "labels", "type": "Text", "description": "Comma-separated labels"},
+                    {"name": "base_branch", "type": "Text", "description": "Target branch"},
+                    {"name": "head_branch", "type": "Text", "description": "Source branch"}
+                ]
+            },
+            {
+                "name": "developer_aggregates",
+                "description": "Aggregated metrics per developer",
+                "source": "data/developer_aggregates.csv",
+                "columns": [
+                    {"name": "repository", "type": "Text"},
+                    {"name": "developer", "type": "Text"},
+                    {"name": "total_prs", "type": "Whole Number"},
+                    {"name": "merged_prs", "type": "Whole Number"},
+                    {"name": "rejected_prs", "type": "Whole Number"},
+                    {"name": "open_prs", "type": "Whole Number"},
+                    {"name": "avg_time_to_merge_hours", "type": "Decimal Number"},
+                    {"name": "prs_beyond_threshold", "type": "Whole Number"},
+                    {"name": "merge_rate", "type": "Decimal Number"},
+                    {"name": "rejection_rate", "type": "Decimal Number"}
+                ]
+            },
+            {
+                "name": "repository_aggregates",
+                "description": "Aggregated metrics per repository",
+                "source": "data/repository_aggregates.csv",
+                "columns": [
+                    {"name": "repository", "type": "Text"},
+                    {"name": "total_prs", "type": "Whole Number"},
+                    {"name": "merged_prs", "type": "Whole Number"},
+                    {"name": "rejected_prs", "type": "Whole Number"},
+                    {"name": "open_prs", "type": "Whole Number"},
+                    {"name": "avg_time_to_merge_hours", "type": "Decimal Number"},
+                    {"name": "prs_beyond_threshold", "type": "Whole Number"},
+                    {"name": "unique_contributors", "type": "Whole Number"},
+                    {"name": "merge_rate", "type": "Decimal Number"},
+                    {"name": "rejection_rate", "type": "Decimal Number"}
+                ]
+            },
+            {
+                "name": "overall_aggregates",
+                "description": "Overall aggregated metrics",
+                "source": "data/overall_aggregates.csv",
+                "columns": [
+                    {"name": "total_repositories", "type": "Whole Number"},
+                    {"name": "total_prs", "type": "Whole Number"},
+                    {"name": "total_merged", "type": "Whole Number"},
+                    {"name": "total_rejected", "type": "Whole Number"},
+                    {"name": "total_open", "type": "Whole Number"},
+                    {"name": "avg_time_to_merge_hours", "type": "Decimal Number"},
+                    {"name": "total_beyond_threshold", "type": "Whole Number"},
+                    {"name": "unique_contributors", "type": "Whole Number"},
+                    {"name": "overall_merge_rate", "type": "Decimal Number"},
+                    {"name": "overall_rejection_rate", "type": "Decimal Number"}
+                ]
+            },
+            {
+                "name": "threshold_violations",
+                "description": "PRs exceeding review threshold",
+                "source": "data/threshold_violations.csv",
+                "columns": [
+                    {"name": "repository", "type": "Text"},
+                    {"name": "pr_number", "type": "Whole Number"},
+                    {"name": "pr_title", "type": "Text"},
+                    {"name": "author", "type": "Text"},
+                    {"name": "hours_open", "type": "Decimal Number"},
+                    {"name": "hours_overdue", "type": "Decimal Number"},
+                    {"name": "pr_url", "type": "Text"}
+                ]
+            }
+        ],
+        "relationships": [
+            {
+                "fromTable": "pull_requests",
+                "fromColumn": "repository",
+                "toTable": "repository_aggregates",
+                "toColumn": "repository",
+                "cardinality": "ManyToOne"
+            },
+            {
+                "fromTable": "developer_aggregates",
+                "fromColumn": "repository",
+                "toTable": "repository_aggregates",
+                "toColumn": "repository",
+                "cardinality": "ManyToOne"
+            }
+        ]
+    },
+    "pages": [
+        {
+            "name": "Executive Summary",
+            "type": "Main",
+            "description": "High-level KPIs and aggregate metrics",
+            "visuals": [
+                {"type": "KPI Card", "measure": "Total PRs", "drillThrough": "Developer Details"},
+                {"type": "KPI Card", "measure": "Total Merged", "drillThrough": "Developer Details"},
+                {"type": "KPI Card", "measure": "Total Rejected", "drillThrough": "Developer Details"},
+                {"type": "KPI Card", "measure": "PRs Beyond Threshold", "drillThrough": "Threshold Violations"},
+                {"type": "Donut Chart", "field": "state", "value": "count"},
+                {"type": "Bar Chart", "axis": "repository", "value": "total_prs"},
+                {"type": "Line Chart", "axis": "created_at", "value": "count"}
+            ]
+        },
+        {
+            "name": "Developer Details",
+            "type": "DrillThrough",
+            "description": "Individual developer metrics",
+            "drillThroughFields": ["repository", "author"],
+            "visuals": [
+                {"type": "Table", "source": "developer_aggregates"},
+                {"type": "Bar Chart", "axis": "developer", "value": "total_prs"},
+                {"type": "Scatter Plot", "xAxis": "total_prs", "yAxis": "avg_time_to_merge_hours"}
+            ]
+        },
+        {
+            "name": "Threshold Violations",
+            "type": "DrillThrough",
+            "description": "PRs beyond 48-hour threshold",
+            "visuals": [
+                {"type": "Table", "source": "threshold_violations"},
+                {"type": "Treemap", "category": "repository", "value": "count"}
+            ]
+        },
+        {
+            "name": "Time Analysis",
+            "type": "Detail",
+            "description": "Merge time distribution and analysis",
+            "visuals": [
+                {"type": "Histogram", "field": "time_to_merge_hours"},
+                {"type": "Box Plot", "category": "repository", "value": "time_to_merge_hours"}
+            ]
+        }
+    ],
+    "slicers": [
+        {"name": "Repository Filter", "field": "repository", "type": "Dropdown"},
+        {"name": "Date Range", "field": "created_at", "type": "DateRange"},
+        {"name": "Developer Filter", "field": "author", "type": "Dropdown"},
+        {"name": "Status Filter", "field": "state", "type": "Buttons"}
+    ],
+    "theme": {
+        "primary": "#0058A3",
+        "secondary": "#FFDB00",
+        "success": "#4CAF50",
+        "warning": "#FFC107",
+        "danger": "#F44336",
+        "background": "#FFFFFF",
+        "text": "#111111"
+    }
+}
+

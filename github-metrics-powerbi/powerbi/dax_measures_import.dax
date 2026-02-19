@@ -1,0 +1,294 @@
+// =====================================================
+// GITHUB METRICS - DAX MEASURES FOR POWER BI
+// =====================================================
+// Instructions:
+// 1. Open Power BI Desktop
+// 2. Create a table called "_Measures" (Enter Data > name it _Measures)
+// 3. Right-click _Measures > New Measure
+// 4. Copy each measure below one at a time
+// =====================================================
+
+// =====================================================
+// SECTION 1: CORE AGGREGATE MEASURES
+// These are the main KPI measures for the executive summary
+// =====================================================
+
+// Measure: Total PRs
+// Description: Total count of all pull requests across repositories
+Total PRs = COUNTROWS('pull_requests')
+
+// Measure: Total Merged
+// Description: Count of successfully merged pull requests
+Total Merged =
+CALCULATE(
+    COUNTROWS('pull_requests'),
+    'pull_requests'[is_merged] = TRUE
+)
+
+// Measure: Total Rejected
+// Description: Count of rejected/closed without merge pull requests
+Total Rejected =
+CALCULATE(
+    COUNTROWS('pull_requests'),
+    'pull_requests'[is_rejected] = TRUE
+)
+
+// Measure: Total Open
+// Description: Count of currently open pull requests
+Total Open =
+CALCULATE(
+    COUNTROWS('pull_requests'),
+    'pull_requests'[is_open] = TRUE
+)
+
+// Measure: Total Repositories
+// Description: Count of unique repositories
+Total Repositories =
+DISTINCTCOUNT('pull_requests'[repository])
+
+// Measure: Total Contributors
+// Description: Count of unique PR authors
+Total Contributors =
+DISTINCTCOUNT('pull_requests'[author])
+
+// =====================================================
+// SECTION 2: THRESHOLD MEASURES
+// PRs beyond the 48-hour review SLA
+// =====================================================
+
+// Measure: PRs Beyond Threshold
+// Description: Count of open PRs that have exceeded 48 hours
+PRs Beyond Threshold =
+CALCULATE(
+    COUNTROWS('pull_requests'),
+    'pull_requests'[is_beyond_threshold] = TRUE
+)
+
+// Measure: Critical PRs
+// Description: Count of PRs open longer than 72 hours (critical)
+Critical PRs =
+CALCULATE(
+    COUNTROWS('pull_requests'),
+    'pull_requests'[hours_open] > 72,
+    'pull_requests'[is_open] = TRUE
+)
+
+// Measure: Threshold Violation Rate
+// Description: Percentage of open PRs that are beyond threshold
+Threshold Violation Rate =
+DIVIDE(
+    [PRs Beyond Threshold],
+    [Total Open],
+    0
+) * 100
+
+// Measure: Average Hours Overdue
+// Description: Average hours past the 48-hour threshold
+Avg Hours Overdue =
+CALCULATE(
+    AVERAGE('pull_requests'[hours_open]) - 48,
+    'pull_requests'[is_beyond_threshold] = TRUE
+)
+
+// =====================================================
+// SECTION 3: RATE MEASURES
+// Percentage-based metrics
+// =====================================================
+
+// Measure: Merge Rate
+// Description: Percentage of PRs that were successfully merged
+Merge Rate =
+DIVIDE([Total Merged], [Total PRs], 0) * 100
+
+// Measure: Rejection Rate
+// Description: Percentage of PRs that were rejected
+Rejection Rate =
+DIVIDE([Total Rejected], [Total PRs], 0) * 100
+
+// =====================================================
+// SECTION 4: TIME METRICS
+// Measures related to PR lifecycle duration
+// =====================================================
+
+// Measure: Average Time to Merge (Hours)
+// Description: Mean time from PR creation to merge
+Avg Time to Merge (Hours) =
+AVERAGE('pull_requests'[time_to_merge_hours])
+
+// Measure: Average Time to Merge (Days)
+// Description: Mean time in days
+Avg Time to Merge (Days) =
+DIVIDE(
+    [Avg Time to Merge (Hours)],
+    24,
+    0
+)
+
+// Measure: Median Time to Merge
+// Description: Median merge time (less affected by outliers)
+Median Time to Merge =
+MEDIAN('pull_requests'[time_to_merge_hours])
+
+// Measure: Min Time to Merge
+// Description: Fastest PR merge time
+Min Time to Merge =
+MIN('pull_requests'[time_to_merge_hours])
+
+// Measure: Max Time to Merge
+// Description: Longest PR merge time
+Max Time to Merge =
+MAX('pull_requests'[time_to_merge_hours])
+
+// =====================================================
+// SECTION 5: DEVELOPER-LEVEL MEASURES
+// For the drill-through developer details page
+// =====================================================
+
+// Measure: Developer PR Count
+// Description: PR count for the selected developer
+Developer PR Count =
+CALCULATE(
+    COUNTROWS('pull_requests'),
+    ALLEXCEPT('pull_requests', 'pull_requests'[author])
+)
+
+// Measure: Developer Merge Rate
+// Description: Merge rate for the selected developer
+Developer Merge Rate =
+VAR TotalPRs = [Developer PR Count]
+VAR MergedPRs =
+    CALCULATE(
+        COUNTROWS('pull_requests'),
+        'pull_requests'[is_merged] = TRUE,
+        ALLEXCEPT('pull_requests', 'pull_requests'[author])
+    )
+RETURN
+    DIVIDE(MergedPRs, TotalPRs, 0) * 100
+
+// Measure: Developer Avg Merge Time
+// Description: Average merge time for the selected developer
+Developer Avg Merge Time =
+CALCULATE(
+    AVERAGE('pull_requests'[time_to_merge_hours]),
+    ALLEXCEPT('pull_requests', 'pull_requests'[author])
+)
+
+// Measure: Developer Threshold Violations
+// Description: Count of threshold violations for selected developer
+Developer Threshold Violations =
+CALCULATE(
+    COUNTROWS('pull_requests'),
+    'pull_requests'[is_beyond_threshold] = TRUE,
+    ALLEXCEPT('pull_requests', 'pull_requests'[author])
+)
+
+// Measure: Rejections by Developer
+// Description: Rejection count for selected developer
+Rejections by Developer =
+CALCULATE(
+    COUNTROWS('pull_requests'),
+    'pull_requests'[is_rejected] = TRUE,
+    ALLEXCEPT('pull_requests', 'pull_requests'[author])
+)
+
+// =====================================================
+// SECTION 6: REPOSITORY-LEVEL MEASURES
+// =====================================================
+
+// Measure: Rejections by Repository
+// Description: Rejection count for selected repository
+Rejections by Repository =
+CALCULATE(
+    COUNTROWS('pull_requests'),
+    'pull_requests'[is_rejected] = TRUE,
+    ALLEXCEPT('pull_requests', 'pull_requests'[repository])
+)
+
+// Measure: Time to Merge by Developer
+// Description: Avg merge time for selected developer context
+Avg Time to Merge by Developer =
+CALCULATE(
+    AVERAGE('pull_requests'[time_to_merge_hours]),
+    ALLEXCEPT('pull_requests', 'pull_requests'[author])
+)
+
+// =====================================================
+// SECTION 7: TIME PERIOD MEASURES
+// =====================================================
+
+// Measure: PRs This Month
+// Description: PRs created in the current month
+PRs This Month =
+CALCULATE(
+    COUNTROWS('pull_requests'),
+    MONTH('pull_requests'[created_at]) = MONTH(TODAY()) &&
+    YEAR('pull_requests'[created_at]) = YEAR(TODAY())
+)
+
+// Measure: PRs Last 7 Days
+// Description: PRs created in the last 7 days
+PRs Last 7 Days =
+CALCULATE(
+    COUNTROWS('pull_requests'),
+    'pull_requests'[created_at] >= TODAY() - 7
+)
+
+// =====================================================
+// SECTION 8: DRILL-THROUGH MEASURES
+// =====================================================
+
+// Measure: Selected Repository PRs
+// Description: Shows PR count only when repository is filtered
+Selected Repository PRs =
+IF(
+    ISFILTERED('pull_requests'[repository]),
+    COUNTROWS('pull_requests'),
+    BLANK()
+)
+
+// Measure: Selected Developer PRs
+// Description: Shows PR count only when developer is filtered
+Selected Developer PRs =
+IF(
+    ISFILTERED('pull_requests'[author]),
+    COUNTROWS('pull_requests'),
+    BLANK()
+)
+
+// =====================================================
+// SECTION 9: CONDITIONAL FORMATTING MEASURES
+// For visual formatting and icons
+// =====================================================
+
+// Measure: Merge Time Color
+// Description: Returns color code based on merge time performance
+Merge Time Color =
+SWITCH(
+    TRUE(),
+    [Avg Time to Merge (Hours)] <= 24, "#4CAF50",
+    [Avg Time to Merge (Hours)] <= 48, "#FFC107",
+    "#F44336"
+)
+
+// Measure: Threshold Icon
+// Description: Returns icon based on threshold status
+Threshold Icon =
+IF(
+    [PRs Beyond Threshold] > 0,
+    "⚠️",
+    "✅"
+)
+
+// Measure: Repository Health Score
+// Description: Composite score (0-100) based on multiple factors
+Repository Health Score =
+VAR MergeRateScore = [Total Merged] / [Total PRs] * 40
+VAR TimeScore = IF([Avg Time to Merge (Hours)] <= 48, 30, 30 - ([Avg Time to Merge (Hours)] - 48) / 10)
+VAR ThresholdScore = 30 - ([PRs Beyond Threshold] * 5)
+RETURN
+    MIN(100, MAX(0, MergeRateScore + TimeScore + ThresholdScore))
+
+// =====================================================
+// END OF DAX MEASURES
+// =====================================================
+

@@ -1,0 +1,33 @@
+{
+  "github": {
+    "base_url": "https://api.github.com",
+    "access_token": "VDS",
+    "organization": "ikea"
+  },
+    "repositories": [
+        {
+            "name": "cc-order-creation",
+            "owner": "ikea",
+            "branch": "main"
+        },
+        {
+            "name": "order-modification-persist",
+            "owner": "ikea",
+            "branch": "main"
+        },
+        {
+            "name": "shopping-list-creation",
+            "owner": "ikea",
+            "branch": "main"
+        }
+    ],
+    "thresholds": {
+        "pr_review_hours": 48,
+        "stale_pr_days": 7
+    },
+    "output": {
+        "data_directory": "../data",
+        "date_format": "%Y-%m-%d %H:%M:%S"
+    }
+}
+

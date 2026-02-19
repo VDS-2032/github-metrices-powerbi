@@ -1,0 +1,247 @@
+{
+  "name": "GitHub Repository Metrics Dashboard",
+  "description": "Power BI dashboard for tracking Pull Request metrics across GitHub repositories including merge rates, rejection rates, time-to-merge analysis, and SLA threshold monitoring.",
+  "version": "1.0.0",
+  "author": "IKEA Development Team",
+  "created": "2026-02-18",
+  "parameters": [
+    {
+      "name": "DataFolderPath",
+      "type": "Text",
+      "description": "Path to the folder containing CSV data files",
+      "defaultValue": "C:\\ikea\\order-modification-persist\\github-metrics-powerbi\\data",
+      "required": true
+    }
+  ],
+  "tables": [
+    {
+      "name": "pull_requests",
+      "source": "pull_requests.csv",
+      "description": "Detailed pull request data from all repositories",
+      "rowCount": "Variable",
+      "keyColumn": "pr_number"
+    },
+    {
+      "name": "developer_aggregates",
+      "source": "developer_aggregates.csv",
+      "description": "Aggregated metrics per developer per repository",
+      "rowCount": "Variable",
+      "keyColumn": "developer"
+    },
+    {
+      "name": "repository_aggregates",
+      "source": "repository_aggregates.csv",
+      "description": "Aggregated metrics per repository",
+      "rowCount": "3",
+      "keyColumn": "repository"
+    },
+    {
+      "name": "overall_aggregates",
+      "source": "overall_aggregates.csv",
+      "description": "Overall summary metrics across all repositories",
+      "rowCount": "1",
+      "keyColumn": null
+    },
+    {
+      "name": "threshold_violations",
+      "source": "threshold_violations.csv",
+      "description": "PRs that have exceeded the 48-hour review threshold",
+      "rowCount": "Variable",
+      "keyColumn": "pr_number"
+    },
+    {
+      "name": "DateTable",
+      "source": "Generated",
+      "description": "Calendar table for time intelligence",
+      "rowCount": "1096",
+      "keyColumn": "Date"
+    },
+    {
+      "name": "_Measures",
+      "source": "Generated",
+      "description": "Container table for DAX measures",
+      "rowCount": "1",
+      "keyColumn": null
+    }
+  ],
+  "relationships": [
+    {
+      "fromTable": "pull_requests",
+      "fromColumn": "repository",
+      "toTable": "repository_aggregates",
+      "toColumn": "repository",
+      "cardinality": "ManyToOne",
+      "crossFilterDirection": "Both"
+    },
+    {
+      "fromTable": "developer_aggregates",
+      "fromColumn": "repository",
+      "toTable": "repository_aggregates",
+      "toColumn": "repository",
+      "cardinality": "ManyToOne",
+      "crossFilterDirection": "Single"
+    },
+    {
+      "fromTable": "threshold_violations",
+      "fromColumn": "repository",
+      "toTable": "repository_aggregates",
+      "toColumn": "repository",
+      "cardinality": "ManyToOne",
+      "crossFilterDirection": "Single"
+    },
+    {
+      "fromTable": "threshold_violations",
+      "fromColumn": "pr_number",
+      "toTable": "pull_requests",
+      "toColumn": "pr_number",
+      "cardinality": "OneToOne",
+      "crossFilterDirection": "Both"
+    },
+    {
+      "fromTable": "pull_requests",
+      "fromColumn": "created_at",
+      "toTable": "DateTable",
+      "toColumn": "Date",
+      "cardinality": "ManyToOne",
+      "crossFilterDirection": "Single",
+      "active": true
+    }
+  ],
+  "measures": [
+    {
+      "name": "Total PRs",
+      "table": "_Measures",
+      "expression": "COUNTROWS('pull_requests')",
+      "formatString": "#,##0",
+      "description": "Total count of all pull requests"
+    },
+    {
+      "name": "Total Merged",
+      "table": "_Measures",
+      "expression": "CALCULATE(COUNTROWS('pull_requests'), 'pull_requests'[is_merged] = TRUE)",
+      "formatString": "#,##0",
+      "description": "Count of merged pull requests"
+    },
+    {
+      "name": "Total Rejected",
+      "table": "_Measures",
+      "expression": "CALCULATE(COUNTROWS('pull_requests'), 'pull_requests'[is_rejected] = TRUE)",
+      "formatString": "#,##0",
+      "description": "Count of rejected pull requests"
+    },
+    {
+      "name": "Total Open",
+      "table": "_Measures",
+      "expression": "CALCULATE(COUNTROWS('pull_requests'), 'pull_requests'[is_open] = TRUE)",
+      "formatString": "#,##0",
+      "description": "Count of currently open pull requests"
+    },
+    {
+      "name": "PRs Beyond Threshold",
+      "table": "_Measures",
+      "expression": "CALCULATE(COUNTROWS('pull_requests'), 'pull_requests'[is_beyond_threshold] = TRUE)",
+      "formatString": "#,##0",
+      "description": "Count of PRs open longer than 48 hours"
+    },
+    {
+      "name": "Avg Time to Merge (Hours)",
+      "table": "_Measures",
+      "expression": "AVERAGE('pull_requests'[time_to_merge_hours])",
+      "formatString": "#,##0.0",
+      "description": "Average time from PR open to merge in hours"
+    },
+    {
+      "name": "Merge Rate",
+      "table": "_Measures",
+      "expression": "DIVIDE([Total Merged], [Total PRs], 0) * 100",
+      "formatString": "#,##0.0\"%\"",
+      "description": "Percentage of PRs that were merged"
+    },
+    {
+      "name": "Rejection Rate",
+      "table": "_Measures",
+      "expression": "DIVIDE([Total Rejected], [Total PRs], 0) * 100",
+      "formatString": "#,##0.0\"%\"",
+      "description": "Percentage of PRs that were rejected"
+    }
+  ],
+  "pages": [
+    {
+      "name": "Executive Summary",
+      "type": "Main",
+      "description": "High-level KPIs and aggregate metrics with drill-through capability",
+      "visuals": [
+        {"type": "Card", "measure": "Total PRs", "position": {"x": 0, "y": 0}},
+        {"type": "Card", "measure": "Total Merged", "position": {"x": 1, "y": 0}},
+        {"type": "Card", "measure": "Total Rejected", "position": {"x": 2, "y": 0}},
+        {"type": "Card", "measure": "PRs Beyond Threshold", "position": {"x": 3, "y": 0}},
+        {"type": "DonutChart", "field": "state", "position": {"x": 0, "y": 1}},
+        {"type": "BarChart", "axis": "repository", "position": {"x": 1, "y": 1}},
+        {"type": "Table", "source": "repository_aggregates", "position": {"x": 0, "y": 2}}
+      ]
+    },
+    {
+      "name": "Developer Details",
+      "type": "DrillThrough",
+      "description": "Individual developer metrics accessible via drill-through",
+      "drillThroughFields": ["repository", "author"],
+      "visuals": [
+        {"type": "BackButton", "position": {"x": 0, "y": 0}},
+        {"type": "Table", "source": "developer_aggregates", "position": {"x": 0, "y": 1}},
+        {"type": "BarChart", "axis": "developer", "value": "total_prs", "position": {"x": 1, "y": 1}}
+      ]
+    },
+    {
+      "name": "Threshold Violations",
+      "type": "DrillThrough",
+      "description": "PRs exceeding the 48-hour review threshold",
+      "visuals": [
+        {"type": "Card", "measure": "PRs Beyond Threshold", "position": {"x": 0, "y": 0}},
+        {"type": "Table", "source": "threshold_violations", "position": {"x": 0, "y": 1}},
+        {"type": "Treemap", "category": "repository", "position": {"x": 1, "y": 1}}
+      ]
+    },
+    {
+      "name": "Time Analysis",
+      "type": "Detail",
+      "description": "Merge time distribution and trends",
+      "visuals": [
+        {"type": "Card", "measure": "Avg Time to Merge (Hours)", "position": {"x": 0, "y": 0}},
+        {"type": "Histogram", "field": "time_to_merge_hours", "position": {"x": 0, "y": 1}},
+        {"type": "LineChart", "axis": "created_at", "value": "time_to_merge_hours", "position": {"x": 1, "y": 1}}
+      ]
+    }
+  ],
+  "slicers": [
+    {
+      "name": "Repository",
+      "field": "pull_requests.repository",
+      "type": "Dropdown",
+      "page": "Executive Summary"
+    },
+    {
+      "name": "Date Range",
+      "field": "pull_requests.created_at",
+      "type": "Between",
+      "page": "Executive Summary"
+    },
+    {
+      "name": "Status",
+      "field": "pull_requests.state",
+      "type": "Buttons",
+      "page": "Executive Summary"
+    }
+  ],
+  "drillThrough": {
+    "enabled": true,
+    "pages": ["Developer Details", "Threshold Violations"],
+    "fields": ["repository", "author"],
+    "keepAllFilters": true
+  },
+  "refreshSchedule": {
+    "frequency": "Daily",
+    "time": "06:00",
+    "timezone": "UTC"
+  }
+}
+

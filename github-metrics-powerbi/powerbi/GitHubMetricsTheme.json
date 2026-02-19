@@ -1,0 +1,28 @@
+{
+  "version": "1.0",
+  "themeJson": {
+    "name": "GitHub Metrics Theme",
+    "dataColors": [
+      "#0058A3",
+      "#FFDB00",
+      "#4CAF50",
+      "#F44336",
+      "#2196F3",
+      "#FF9800",
+      "#9C27B0",
+      "#00BCD4"
+    ],
+    "background": "#FFFFFF",
+    "foreground": "#111111",
+    "tableAccent": "#0058A3",
+    "visualStyles": {
+      "card": {
+        "*": {
+          "background": [{"color": {"solid": {"color": "#F5F5F5"}}}],
+          "border": [{"color": {"solid": {"color": "#E0E0E0"}}}]
+        }
+      }
+    }
+  }
+}
+

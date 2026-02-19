@@ -1,0 +1,15 @@
+repository,developer,total_prs,merged_prs,rejected_prs,open_prs,avg_time_to_merge_hours,prs_beyond_threshold,merge_rate,rejection_rate,extraction_date
+cc-order-creation,developer1,2,1,0,1,8.0,1,50.0,0.0,2026-02-18 12:00:00
+cc-order-creation,developer2,1,1,0,0,29.0,0,100.0,0.0,2026-02-18 12:00:00
+cc-order-creation,developer3,1,0,1,0,,0,0.0,100.0,2026-02-18 12:00:00
+cc-order-creation,developer4,1,1,0,0,20.0,0,100.0,0.0,2026-02-18 12:00:00
+order-modification-persist,developer1,2,2,0,0,23.5,0,100.0,0.0,2026-02-18 12:00:00
+order-modification-persist,developer2,1,0,0,1,,1,0.0,0.0,2026-02-18 12:00:00
+order-modification-persist,developer3,1,0,1,0,,0,0.0,100.0,2026-02-18 12:00:00
+order-modification-persist,developer5,1,1,0,0,30.0,0,100.0,0.0,2026-02-18 12:00:00
+shopping-list-creation,developer1,1,1,0,0,47.0,0,100.0,0.0,2026-02-18 12:00:00
+shopping-list-creation,developer2,1,1,0,0,7.0,0,100.0,0.0,2026-02-18 12:00:00
+shopping-list-creation,developer3,1,0,0,1,,1,0.0,0.0,2026-02-18 12:00:00
+shopping-list-creation,developer4,1,1,0,0,5.0,0,100.0,0.0,2026-02-18 12:00:00
+shopping-list-creation,developer5,1,0,0,1,,0,0.0,0.0,2026-02-18 12:00:00
+
