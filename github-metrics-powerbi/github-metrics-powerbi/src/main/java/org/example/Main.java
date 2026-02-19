@@ -1,17 +1,46 @@
 package org.example;
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
+import java.io.File;
+import java.io.IOException;
+
+/**
+ * Entry point for the GitHub Metrics Power BI Desktop Import Generator.
+ *
+ * <p>Usage: java Main [projectDir] [outputFile]
+ * <ul>
+ *   <li>projectDir  - root folder containing the powerbi/ and data/ sub-folders
+ *                     (defaults to the parent of the current working directory)</li>
+ *   <li>outputFile  - path for the generated .pbit template file
+ *                     (defaults to GitHubMetrics.pbit in the current directory)</li>
+ * </ul>
+ */
 public class Main {
     public static void main(String[] args) {
-        //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
-        // to see how IntelliJ IDEA suggests fixing it.
-        System.out.printf("Hello and welcome!");
+        String projectDir = args.length > 0 ? args[0]
+                : new File("..").getAbsolutePath();
+        String outputPath = args.length > 1 ? args[1] : "GitHubMetrics.pbit";
 
-        for (int i = 1; i <= 5; i++) {
-            //TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-            // for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
-            System.out.println("i = " + i);
+        System.out.println("GitHub Metrics - Power BI Desktop Import Generator");
+        System.out.println("====================================================");
+        System.out.printf("Source directory : %s%n", new File(projectDir).getAbsolutePath());
+        System.out.printf("Output file      : %s%n%n", new File(outputPath).getAbsolutePath());
+
+        try {
+            PowerBIProjectGenerator generator = new PowerBIProjectGenerator(projectDir);
+            generator.generate(outputPath);
+
+            System.out.printf("%nSuccessfully generated: %s%n", outputPath);
+            System.out.println("Open this file in Power BI Desktop to start building your dashboard.");
+            System.out.println();
+            System.out.println("The template includes:");
+            System.out.println("  - 7 data tables with correct column types");
+            System.out.println("  - 18 pre-built DAX measures");
+            System.out.println("  - All table relationships configured");
+            System.out.println("  - DataFolderPath parameter for easy data refresh");
+            System.out.println("  - 4 report pages ready for visuals");
+        } catch (IOException e) {
+            System.err.println("Error generating Power BI project: " + e.getMessage());
+            System.exit(1);
         }
     }
 }

@@ -12,6 +12,41 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- Default paths used by mvn exec:java -->
+        <generator.projectDir>${project.basedir}/..</generator.projectDir>
+        <generator.outputFile>${project.basedir}/../powerbi/GitHubMetrics.pbit</generator.outputFile>
     </properties>
+
+    <build>
+        <plugins>
+            <!-- Build a self-contained executable JAR -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.3.0</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>org.example.Main</mainClass>
+                        </manifest>
+                    </archive>
+                    <finalName>github-metrics-powerbi-generator</finalName>
+                </configuration>
+            </plugin>
+            <!-- Allow: mvn exec:java  (optionally with -DgeneratorProjectDir=... and -DgeneratorOutputFile=...) -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <mainClass>org.example.Main</mainClass>
+                    <arguments>
+                        <argument>${generator.projectDir}</argument>
+                        <argument>${generator.outputFile}</argument>
+                    </arguments>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
