@@ -1,5 +1,5 @@
 # Maven build artifacts
-github-metrics-powerbi/target/
+github-metrics-powerbi/github-metrics-powerbi/target/
 
 # IntelliJ IDEA
 .idea/
